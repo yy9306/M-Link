@@ -14,7 +14,7 @@ import {
 
 import HttpMusic from '../api/api'
 import {createSong, isValidMusic} from '../common/song'
-import {width,height, jumpPager} from '../base/Utils'
+import {width,height, jumpPager, shuffle} from '../base/Utils'
 
 const windowHeight = width * 0.7;
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -102,10 +102,7 @@ export default class SingerDetail extends Component{
         <View style={styles.titleWrapper}>
           <Text style={styles.title} numberOfLines={1}>{this.props.navigation.state.params.data.title}</Text>
         </View>
-        <Animated.Image style={{
-          resizeMode: 'cover',
-          width: width,
-          height: windowHeight,
+        {this.state.singerData.length > 0 && <Animated.View style={{position: 'relative', width: width, paddingTop: windowHeight,
           opacity: this.state.scrollY.interpolate({
             inputRange: [-windowHeight, 0, windowHeight / 1.2],
             outputRange: [1, 1, 0.4],
@@ -113,17 +110,34 @@ export default class SingerDetail extends Component{
           }),
           transform: [{
             translateY: this.state.scrollY.interpolate({
-              inputRange: [ -windowHeight, 0, windowHeight],
-              outputRange: [windowHeight/2, 0, -50],
+              inputRange: [-windowHeight, 0, windowHeight],
+              outputRange: [windowHeight / 2, 0, -50],
               extrapolate: 'clamp'
             })
-          },{
+          }, {
             scale: this.state.scrollY.interpolate({
-              inputRange: [ -windowHeight, 0, windowHeight],
+              inputRange: [-windowHeight, 0, windowHeight],
               outputRange: [2, 1, 1]
             })
           }]
+        }}>
+          <Image style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            resizeMode: 'cover',
+            width: width,
+            height: windowHeight,
         }}  source={{uri: this.avatar}}/>
+          <TouchableOpacity style={styles.playWrapper} onPress={() => {
+            jumpPager(this.props.navigation.navigate, 'Play',{
+              songs: shuffle(this.state.singerData)
+            })
+          }}>
+            <Image source={require('./img/icon-play.png')} style={styles.iconPlay}/>
+          </TouchableOpacity>
+          <View style={styles.filter} />
+        </Animated.View>}
         <Animated.View style={{
           flex: 1,
           position: 'absolute',
@@ -198,6 +212,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     color: '#fff',
+  },
+  playWrapper: {
+    position: 'absolute',
+    bottom: 70,
+    left: 0,
+    width: width,
+    height: 32,
+    zIndex: 10,
+    alignItems: 'center'
+  },
+  iconPlay: {
+    height: 32,
+    width: 135,
+  },
+  filter: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: width,
+    height: windowHeight,
+    backgroundColor: 'rgba(7, 17, 27, 0.4)'
   },
   back: {
     position: 'absolute',
